@@ -1,9 +1,10 @@
-import { ANIME, IAnimeResult, ISearch } from "@consumet/extensions"
+import { META } from "@consumet/extensions"
 import axios from "axios"
 import { FastifyReply, FastifyRequest } from "fastify"
 import { ZodError, z } from "zod"
 
-const gogoanime = new ANIME.Gogoanime()
+// const gogoanime = new ANIME.Gogoanime({})
+const anilist = new META.Anilist()
 
 const pageSchema = z.object({
   page: z.string(),
@@ -25,11 +26,30 @@ export const topAiring = async (
   try {
     const validParams = pageSchema.parse(request.query)
     const { page } = validParams
-    // const data = await gogoanime.fetchTopAiring(parseInt(page))
-    const { data } = await axios.get<ISearch<IAnimeResult>>(
-      "https://api.consumet.org/anime/gogoanime/top-airing",
-      { params: { page: parseInt(page) } }
-    )
+    // const { data } = await axios.get<ISearch<IAnimeResult>>(
+    //   "https://api.consumet.org/anime/gogoanime/top-airing",
+    //   { params: { page: parseInt(page) } }
+    // )
+    const data = await anilist.fetchTrendingAnime(parseInt(page))
+    return reply.status(200).send(data)
+  } catch (error) {
+    if (error instanceof ZodError) {
+      reply.send({ message: "invalid params" })
+    }
+    reply.status(404)
+  }
+}
+
+export const popularAnime = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const validParams = pageSchema.parse(request.query)
+    const { page } = validParams
+    const data = await anilist.fetchPopularAnime(parseInt(page))
+    console.log(data)
+
     return reply.status(200).send(data)
   } catch (error) {
     if (error instanceof ZodError) {
@@ -64,9 +84,10 @@ export const search = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const validQuery = searchQuerySchema.parse(request.query)
     const { name, page } = validQuery
-    const { data } = await axios.get(
-      `https://api.consumet.org/anime/gogoanime/${name}?page=${page}`
-    )
+    // const { data } = await axios.get(
+    //   `https://api.consumet.org/anime/gogoanime/${name}?page=${page}`
+    // )
+    const data = await anilist.search(name, parseInt(page))
     reply.status(200).send(data)
   } catch (error) {
     if (error instanceof ZodError) {
@@ -80,9 +101,11 @@ export const getInfo = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const validId = animeInfoSchema.parse(request.query)
     const { id } = validId
-    const { data } = await axios.get(
-      `https://api.consumet.org/anime/gogoanime/info/${id}`
-    )
+    // const { data } = await axios.get(
+    //   `https://api.consumet.org/anime/gogoanime/info/${id}`
+    // )
+    const data = await anilist.fetchAnimeInfo(id)
+
     reply.status(200).send(data)
   } catch (error) {
     if (error instanceof ZodError) {

@@ -6,6 +6,7 @@ const exploreRoutes = async (fastify) => {
     fastify.get("/recent-episodes", exploreHandlers_1.recentEpisodes);
     fastify.get("/search", exploreHandlers_1.search);
     fastify.get("/get-info", exploreHandlers_1.getInfo);
+    fastify.get("/popular-anime", exploreHandlers_1.popularAnime);
 };
 exports.default = exploreRoutes;
 //# sourceMappingURL=explore-route.js.map
