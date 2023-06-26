@@ -7,9 +7,7 @@ const fastify_1 = __importDefault(require("fastify"));
 const explore_route_1 = __importDefault(require("./routes/explore-route"));
 const streaming_routes_1 = __importDefault(require("./routes/streaming-routes"));
 const fastify = (0, fastify_1.default)({
-    logger: {
-        transport: { target: "pino-pretty" },
-    },
+    logger: true,
 });
 fastify.register(async (fastify) => {
     fastify.register(explore_route_1.default);

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc -w",
-    "dev": "nodemon dist/index.js"
+    "dev": "nodemon dist/index.js",
+    "run:prod": "node dist/index.js"
   },
   "dependencies": {
     "@consumet/extensions": "^1.4.18",

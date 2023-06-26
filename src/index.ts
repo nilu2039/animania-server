@@ -3,9 +3,7 @@ import exploreRoutes from "./routes/explore-route"
 import streamingRoutes from "./routes/streaming-routes"
 
 const fastify = Fastify({
-  logger: {
-    transport: { target: "pino-pretty" },
-  },
+  logger: true,
 })
 
 fastify.register(
