@@ -1,4 +1,4 @@
-import { clerkClient, getAuth } from "@clerk/fastify"
+import { getAuth } from "@clerk/fastify"
 import { META } from "@consumet/extensions"
 import axios from "axios"
 import { FastifyReply, FastifyRequest } from "fastify"

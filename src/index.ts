@@ -8,7 +8,7 @@ import streamingRoutes from "./routes/streaming-routes"
 import { socketHandler } from "./utils/socket"
 
 const fastify = Fastify({
-  logger: false,
+  logger: true,
 })
 
 fastify.register(clerkPlugin)
