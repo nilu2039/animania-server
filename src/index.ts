@@ -6,6 +6,9 @@ import { clerkPlugin } from "@clerk/fastify"
 import exploreRoutes from "./routes/explore-route"
 import streamingRoutes from "./routes/streaming-routes"
 import { socketHandler } from "./utils/socket"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
 
 const fastify = Fastify({
   logger: true,
@@ -17,7 +20,7 @@ fastify.register(fastifyIO)
 fastify.register(
   async (fastify: FastifyInstance) => {
     fastify.register(exploreRoutes)
-    fastify.register(streamingRoutes)
+    fastify.register(() => streamingRoutes(fastify, prisma))
   },
   { prefix: "/api/v1" }
 )
@@ -27,7 +30,7 @@ const start = async () => {
     fastify.ready().then(() => {
       fastify.io.on("connect", (socket) => {
         console.log("connected", socket.id)
-        socketHandler({ socket })
+        socketHandler({ socket, prisma })
       })
     })
 
@@ -37,4 +40,13 @@ const start = async () => {
     process.exit(1)
   }
 }
+
 start()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.log(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

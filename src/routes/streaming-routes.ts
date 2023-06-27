@@ -1,8 +1,19 @@
 import type { FastifyInstance } from "fastify"
-import { getStreamingLinks } from "../handlers/streamingHandlers"
+import {
+  getEpisodeTimestamp,
+  getStreamingLinks,
+} from "../handlers/streamingHandlers"
+import {} from "../"
+import { PrismaInstance } from "../types/prisma-type"
 
-const streamingRoutes = async (fastify: FastifyInstance) => {
+const streamingRoutes = async (
+  fastify: FastifyInstance,
+  prisma: PrismaInstance
+) => {
   fastify.get("/streaming-links", getStreamingLinks)
+  fastify.get("/get-timestamp", (request, reply) =>
+    getEpisodeTimestamp(request, reply, prisma)
+  )
 }
 
 export default streamingRoutes

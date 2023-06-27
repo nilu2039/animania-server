@@ -5,14 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.socketHandler = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const fs_1 = __importDefault(require("fs"));
 let data;
-const socketHandler = ({ socket, }) => {
+const socketHandler = ({ socket, prisma, }) => {
     socket.on("video-time-stamp", (_data) => {
         data = _data;
     });
-    socket.on("disconnect", () => {
-        console.log("disconnected");
+    socket.on("disconnect", async () => {
         const splitPem = process.env.CLERK_JWT_VERIFICATION_KEY.match(/.{1,64}/g);
         const publicKey = "-----BEGIN PUBLIC KEY-----\n" +
             splitPem.join("\n") +
@@ -22,12 +20,33 @@ const socketHandler = ({ socket, }) => {
         }
         try {
             const decoded = jsonwebtoken_1.default.verify(data.sessionToken, publicKey);
-            fs_1.default.writeFile("test.json", JSON.stringify(data), "utf8", (err) => {
-                if (!err) {
-                    console.log("written");
-                }
-            });
-            console.log(data.animeId, data.episodeId, decoded.sub);
+            try {
+                await prisma.videoTimeStamp.update({
+                    where: {
+                        key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                    },
+                    data: {
+                        timeStamp: parseFloat(data.timeStamp),
+                    },
+                });
+            }
+            catch (error) {
+                console.log("db update error");
+            }
+            try {
+                await prisma.videoTimeStamp.create({
+                    data: {
+                        animeId: data.animeId,
+                        episodeID: data.episodeId,
+                        userId: decoded.sub,
+                        timeStamp: parseFloat(data.timeStamp),
+                        key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                    },
+                });
+            }
+            catch (error) {
+                console.log("db error");
+            }
         }
         catch (error) {
             console.log(error);

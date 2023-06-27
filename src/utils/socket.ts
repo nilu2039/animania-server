@@ -1,7 +1,7 @@
+import jwt from "jsonwebtoken"
 import { Socket } from "socket.io"
 import { DefaultEventsMap } from "socket.io/dist/typed-events"
-import jwt from "jsonwebtoken"
-import fs from "fs"
+import { PrismaInstance } from "../types/prisma-type"
 
 type SocketVideoData = {
   animeId: string
@@ -14,19 +14,16 @@ let data: SocketVideoData
 
 export const socketHandler = ({
   socket,
+  prisma,
 }: {
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+  prisma: PrismaInstance
 }) => {
   socket.on("video-time-stamp", (_data: SocketVideoData) => {
-    // socket.once("disconnect", async () => {
-    //   console.log(data, "2")
-    //   data = _data
-    // })
     data = _data
   })
-  socket.on("disconnect", () => {
-    console.log("disconnected")
-
+  socket.on("disconnect", async () => {
+    // console.log("disconnected")
     const splitPem = process.env.CLERK_JWT_VERIFICATION_KEY!.match(/.{1,64}/g)
     const publicKey =
       "-----BEGIN PUBLIC KEY-----\n" +
@@ -39,13 +36,35 @@ export const socketHandler = ({
 
     try {
       const decoded = jwt.verify(data.sessionToken, publicKey)
-      fs.writeFile("test.json", JSON.stringify(data), "utf8", (err) => {
-        if (!err) {
-          console.log("written")
-        }
-      })
 
-      console.log(data.animeId, data.episodeId, decoded.sub)
+      try {
+        await prisma.videoTimeStamp.update({
+          where: {
+            key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+          },
+          data: {
+            timeStamp: parseFloat(data.timeStamp),
+          },
+        })
+        // console.log("db updated")
+      } catch (error) {
+        console.log("db update error")
+      }
+
+      try {
+        await prisma.videoTimeStamp.create({
+          data: {
+            animeId: data.animeId,
+            episodeID: data.episodeId,
+            userId: decoded.sub as string,
+            timeStamp: parseFloat(data.timeStamp),
+            key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+          },
+        })
+        // console.log("db create done")
+      } catch (error) {
+        console.log("db error")
+      }
     } catch (error) {
       console.log(error)
     }

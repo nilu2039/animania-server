@@ -1,5 +1,7 @@
+import { getAuth } from "@clerk/fastify"
 import axios from "axios"
 import { FastifyRequest, FastifyReply } from "fastify"
+import { PrismaInstance } from "../types/prisma-type"
 import { z, ZodError } from "zod"
 
 const EpisodeIdSchema = z.object({
@@ -20,6 +22,38 @@ export const getStreamingLinks = async (
   } catch (error) {
     if (error instanceof ZodError) {
       reply.send('message: "invalid id"')
+    }
+    console.log(error)
+    reply.status(404)
+  }
+}
+
+const TimeStampSchema = z.object({
+  key: z.string(),
+})
+
+export const getEpisodeTimestamp = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  prisma: PrismaInstance
+) => {
+  try {
+    const validParams = TimeStampSchema.parse(request.query)
+    const { key } = validParams
+
+    const { userId } = getAuth(request)
+    if (!userId) {
+      return reply.status(500).send({ error: "not authenticated" })
+    }
+    const data = await prisma.videoTimeStamp.findFirst({
+      where: {
+        key,
+      },
+    })
+    reply.status(200).send(data)
+  } catch (error) {
+    if (error instanceof ZodError) {
+      reply.status(500).send({ message: "invalid key" })
     }
     console.log(error)
     reply.status(404)
