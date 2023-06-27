@@ -1,3 +1,4 @@
+import { clerkClient, getAuth } from "@clerk/fastify"
 import { META } from "@consumet/extensions"
 import axios from "axios"
 import { FastifyReply, FastifyRequest } from "fastify"
@@ -26,11 +27,8 @@ export const topAiring = async (
   try {
     const validParams = pageSchema.parse(request.query)
     const { page } = validParams
-    // const { data } = await axios.get<ISearch<IAnimeResult>>(
-    //   "https://api.consumet.org/anime/gogoanime/top-airing",
-    //   { params: { page: parseInt(page) } }
-    // )
     const data = await anilist.fetchTrendingAnime(parseInt(page))
+    const {} = getAuth(request)
     return reply.status(200).send(data)
   } catch (error) {
     if (error instanceof ZodError) {
@@ -48,7 +46,6 @@ export const popularAnime = async (
     const validParams = pageSchema.parse(request.query)
     const { page } = validParams
     const data = await anilist.fetchPopularAnime(parseInt(page))
-    console.log(data)
 
     return reply.status(200).send(data)
   } catch (error) {

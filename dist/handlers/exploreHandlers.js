@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInfo = exports.search = exports.recentEpisodes = exports.popularAnime = exports.topAiring = void 0;
+const fastify_1 = require("@clerk/fastify");
 const extensions_1 = require("@consumet/extensions");
 const axios_1 = __importDefault(require("axios"));
 const zod_1 = require("zod");
@@ -23,6 +24,7 @@ const topAiring = async (request, reply) => {
         const validParams = pageSchema.parse(request.query);
         const { page } = validParams;
         const data = await anilist.fetchTrendingAnime(parseInt(page));
+        const {} = (0, fastify_1.getAuth)(request);
         return reply.status(200).send(data);
     }
     catch (error) {
@@ -38,7 +40,6 @@ const popularAnime = async (request, reply) => {
         const validParams = pageSchema.parse(request.query);
         const { page } = validParams;
         const data = await anilist.fetchPopularAnime(parseInt(page));
-        console.log(data);
         return reply.status(200).send(data);
     }
     catch (error) {
