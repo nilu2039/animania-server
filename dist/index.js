@@ -11,15 +11,21 @@ const explore_route_1 = __importDefault(require("./routes/explore-route"));
 const streaming_routes_1 = __importDefault(require("./routes/streaming-routes"));
 const socket_1 = require("./utils/socket");
 const client_1 = require("@prisma/client");
+const history_route_1 = __importDefault(require("./routes/history-route"));
 const prisma = new client_1.PrismaClient();
 const fastify = (0, fastify_1.default)({
-    logger: true,
+    logger: {
+        transport: {
+            target: "pino-pretty",
+        },
+    },
 });
 fastify.register(fastify_2.clerkPlugin);
 fastify.register(fastify_socket_io_1.default);
 fastify.register(async (fastify) => {
     fastify.register(explore_route_1.default);
     fastify.register(() => (0, streaming_routes_1.default)(fastify, prisma));
+    fastify.register(() => (0, history_route_1.default)(fastify, prisma));
 }, { prefix: "/api/v1" });
 const start = async () => {
     try {

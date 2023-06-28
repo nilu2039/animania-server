@@ -16,10 +16,25 @@ model VideoTimeStamp {
   key       String   @unique @db.VarChar(500)
   userId    String
   animeId   String
-  episodeID String
-  timeStamp BigInt   @default(0)
+  episodeId String
+  timeStamp Int      @default(0)
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt
 
-  @@index([key])
+  @@index([userId])
+}
+
+model history {
+  id         Int      @id @default(autoincrement())
+  queryKey   String   @unique @db.VarChar(500)
+  userId     String
+  animeId    String
+  episodeId  String
+  animeImg   String   @default("")
+  animeTitle String   @default("")
+  timeStamp  Int      @default(0)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
 }

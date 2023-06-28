@@ -1,0 +1,1 @@
+{"version":3,"file":"history-route.js","sourceRoot":"","sources":["../../src/routes/history-route.ts"],"names":[],"mappings":";;AAGA,+DAAuD;AAEvD,MAAM,aAAa,GAAG,KAAK,EACzB,OAAwB,EACxB,MAAsB,EACtB,EAAE;IACF,OAAO,CAAC,GAAG,CAAC,cAAc,EAAE,CAAC,OAAO,EAAE,KAAK,EAAE,EAAE,CAC7C,IAAA,2BAAU,EAAC,OAAO,EAAE,KAAK,EAAE,MAAM,CAAC,CACnC,CAAA;AACH,CAAC,CAAA;AAED,kBAAe,aAAa,CAAA"}

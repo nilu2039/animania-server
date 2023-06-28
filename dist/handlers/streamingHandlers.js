@@ -35,18 +35,19 @@ const getEpisodeTimestamp = async (request, reply, prisma) => {
         const { key } = validParams;
         const { userId } = (0, fastify_1.getAuth)(request);
         if (!userId) {
-            return reply.status(500).send({ error: "not authenticated" });
+            return reply.status(401).send({ error: "not authenticated" });
         }
         const data = await prisma.videoTimeStamp.findFirst({
             where: {
                 key,
             },
         });
+        console.log(data);
         reply.status(200).send(data);
     }
     catch (error) {
         if (error instanceof zod_1.ZodError) {
-            reply.status(500).send({ message: "invalid key" });
+            reply.status(100).send({ message: "invalid key" });
         }
         console.log(error);
         reply.status(404);

@@ -55,7 +55,7 @@ export const socketHandler = ({
         await prisma.videoTimeStamp.create({
           data: {
             animeId: data.animeId,
-            episodeID: data.episodeId,
+            episodeId: data.episodeId,
             userId: decoded.sub as string,
             timeStamp: parseFloat(data.timeStamp),
             key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,

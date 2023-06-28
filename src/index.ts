@@ -7,11 +7,16 @@ import exploreRoutes from "./routes/explore-route"
 import streamingRoutes from "./routes/streaming-routes"
 import { socketHandler } from "./utils/socket"
 import { PrismaClient } from "@prisma/client"
+import historyRoutes from "./routes/history-route"
 
 const prisma = new PrismaClient()
 
 const fastify = Fastify({
-  logger: true,
+  logger: {
+    transport: {
+      target: "pino-pretty",
+    },
+  },
 })
 
 fastify.register(clerkPlugin)
@@ -21,6 +26,7 @@ fastify.register(
   async (fastify: FastifyInstance) => {
     fastify.register(exploreRoutes)
     fastify.register(() => streamingRoutes(fastify, prisma))
+    fastify.register(() => historyRoutes(fastify, prisma))
   },
   { prefix: "/api/v1" }
 )

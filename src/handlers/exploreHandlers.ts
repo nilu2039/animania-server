@@ -28,7 +28,9 @@ export const topAiring = async (
     const validParams = pageSchema.parse(request.query)
     const { page } = validParams
     const data = await anilist.fetchTrendingAnime(parseInt(page))
-    const {} = getAuth(request)
+    const { userId } = getAuth(request)
+    console.log(userId)
+
     return reply.status(200).send(data)
   } catch (error) {
     if (error instanceof ZodError) {
