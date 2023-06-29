@@ -12,11 +12,12 @@ import historyRoutes from "./routes/history-route"
 const prisma = new PrismaClient()
 
 const fastify = Fastify({
-  logger: {
-    transport: {
-      target: "pino-pretty",
-    },
-  },
+  logger:
+    {
+      transport: {
+        target: "pino-pretty",
+      },
+    } && false,
 })
 
 fastify.register(clerkPlugin)

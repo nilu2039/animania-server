@@ -28,8 +28,7 @@ export const topAiring = async (
     const validParams = pageSchema.parse(request.query)
     const { page } = validParams
     const data = await anilist.fetchTrendingAnime(parseInt(page))
-    const { userId } = getAuth(request)
-    console.log(userId)
+    const {} = getAuth(request)
 
     return reply.status(200).send(data)
   } catch (error) {

@@ -25,16 +25,27 @@ model VideoTimeStamp {
 }
 
 model history {
-  id         Int      @id @default(autoincrement())
-  queryKey   String   @unique @db.VarChar(500)
+  id         Int                   @id @default(autoincrement())
   userId     String
   animeId    String
-  episodeId  String
-  animeImg   String   @default("")
-  animeTitle String   @default("")
-  timeStamp  Int      @default(0)
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
-  updatedAt  DateTime @updatedAt
+  animeImg   String                @default("")
+  animeTitle String                @default("")
+  createdAt  DateTime              @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime              @updatedAt
+  episodes   history_per_episode[]
 
-  @@index([userId])
+  @@unique([userId, animeId])
+}
+
+model history_per_episode {
+  id        Int      @id @default(autoincrement())
+  queryKey  String   @unique @db.VarChar(500)
+  episodeId String
+  timeStamp Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt
+  history   history? @relation(fields: [historyId], references: [id])
+  historyId Int?
+
+  @@index([historyId])
 }

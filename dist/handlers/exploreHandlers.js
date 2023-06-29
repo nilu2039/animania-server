@@ -24,8 +24,7 @@ const topAiring = async (request, reply) => {
         const validParams = pageSchema.parse(request.query);
         const { page } = validParams;
         const data = await anilist.fetchTrendingAnime(parseInt(page));
-        const { userId } = (0, fastify_1.getAuth)(request);
-        console.log(userId);
+        const {} = (0, fastify_1.getAuth)(request);
         return reply.status(200).send(data);
     }
     catch (error) {

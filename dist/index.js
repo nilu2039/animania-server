@@ -18,7 +18,7 @@ const fastify = (0, fastify_1.default)({
         transport: {
             target: "pino-pretty",
         },
-    },
+    } && false,
 });
 fastify.register(fastify_2.clerkPlugin);
 fastify.register(fastify_socket_io_1.default);

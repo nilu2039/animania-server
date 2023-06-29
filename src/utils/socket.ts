@@ -3,14 +3,16 @@ import { Socket } from "socket.io"
 import { DefaultEventsMap } from "socket.io/dist/typed-events"
 import { PrismaInstance } from "../types/prisma-type"
 
-type SocketVideoData = {
+type SocketVideoHistoryData = {
   animeId: string
   episodeId: string
   timeStamp: string
+  animeImg: string
+  animeTitle: string
   sessionToken: string | null
 }
 
-let data: SocketVideoData
+let data: SocketVideoHistoryData
 
 export const socketHandler = ({
   socket,
@@ -19,7 +21,7 @@ export const socketHandler = ({
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
   prisma: PrismaInstance
 }) => {
-  socket.on("video-time-stamp", (_data: SocketVideoData) => {
+  socket.on("video-time-stamp", (_data: SocketVideoHistoryData) => {
     data = _data
   })
   socket.on("disconnect", async () => {
@@ -38,32 +40,81 @@ export const socketHandler = ({
       const decoded = jwt.verify(data.sessionToken, publicKey)
 
       try {
-        await prisma.videoTimeStamp.update({
+        await prisma.history.update({
           where: {
-            key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+            userId_animeId: {
+              userId: decoded.sub as string,
+              animeId: data.animeId,
+            },
           },
           data: {
-            timeStamp: parseFloat(data.timeStamp),
+            updatedAt: new Date(),
+            episodes: {
+              update: {
+                where: {
+                  queryKey: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                },
+                data: {
+                  timeStamp: parseFloat(data.timeStamp),
+                },
+              },
+            },
           },
         })
-        // console.log("db updated")
       } catch (error) {
-        console.log("db update error")
+        console.log("history_per_episode update error")
       }
 
       try {
-        await prisma.videoTimeStamp.create({
+        const res = await prisma.history.create({
           data: {
-            animeId: data.animeId,
-            episodeId: data.episodeId,
             userId: decoded.sub as string,
-            timeStamp: parseFloat(data.timeStamp),
-            key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+            animeId: data.animeId,
+            animeImg: data.animeImg,
+            animeTitle: data.animeTitle,
           },
         })
+        try {
+          await prisma.history_per_episode.create({
+            data: {
+              queryKey: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+              episodeId: data.episodeId,
+              timeStamp: parseFloat(data.timeStamp),
+              historyId: res.id,
+            },
+          })
+          // console.log("db create done")
+        } catch (error) {
+          console.log("history_per_episode create error")
+        }
         // console.log("db create done")
       } catch (error) {
-        console.log("db error")
+        console.log("history create error", error)
+        if (error.code === "P2002") {
+          try {
+            const res = await prisma.history.findFirst({
+              where: { animeId: data.animeId },
+            })
+
+            if (res) {
+              try {
+                await prisma.history_per_episode.create({
+                  data: {
+                    queryKey: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                    episodeId: data.episodeId,
+                    timeStamp: parseFloat(data.timeStamp),
+                    historyId: res.id,
+                  },
+                })
+                // console.log("db create done")
+              } catch (error) {
+                console.log("history_per_episode create error")
+              }
+            }
+          } catch (error) {
+            console.log("anime not found")
+          }
+        }
       }
     } catch (error) {
       console.log(error)

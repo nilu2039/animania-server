@@ -37,12 +37,11 @@ const getEpisodeTimestamp = async (request, reply, prisma) => {
         if (!userId) {
             return reply.status(401).send({ error: "not authenticated" });
         }
-        const data = await prisma.videoTimeStamp.findFirst({
+        const data = await prisma.history_per_episode.findFirst({
             where: {
-                key,
+                queryKey: key,
             },
         });
-        console.log(data);
         reply.status(200).send(data);
     }
     catch (error) {

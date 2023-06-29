@@ -21,31 +21,81 @@ const socketHandler = ({ socket, prisma, }) => {
         try {
             const decoded = jsonwebtoken_1.default.verify(data.sessionToken, publicKey);
             try {
-                await prisma.videoTimeStamp.update({
+                await prisma.history.update({
                     where: {
-                        key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                        userId_animeId: {
+                            userId: decoded.sub,
+                            animeId: data.animeId,
+                        },
                     },
                     data: {
-                        timeStamp: parseFloat(data.timeStamp),
+                        updatedAt: new Date(),
+                        episodes: {
+                            update: {
+                                where: {
+                                    queryKey: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                                },
+                                data: {
+                                    timeStamp: parseFloat(data.timeStamp),
+                                },
+                            },
+                        },
                     },
                 });
             }
             catch (error) {
-                console.log("db update error");
+                console.log("history_per_episode update error");
             }
             try {
-                await prisma.videoTimeStamp.create({
+                const res = await prisma.history.create({
                     data: {
-                        animeId: data.animeId,
-                        episodeId: data.episodeId,
                         userId: decoded.sub,
-                        timeStamp: parseFloat(data.timeStamp),
-                        key: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                        animeId: data.animeId,
+                        animeImg: data.animeImg,
+                        animeTitle: data.animeTitle,
                     },
                 });
+                try {
+                    await prisma.history_per_episode.create({
+                        data: {
+                            queryKey: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                            episodeId: data.episodeId,
+                            timeStamp: parseFloat(data.timeStamp),
+                            historyId: res.id,
+                        },
+                    });
+                }
+                catch (error) {
+                    console.log("history_per_episode create error");
+                }
             }
             catch (error) {
-                console.log("db error");
+                console.log("history create error", error);
+                if (error.code === "P2002") {
+                    try {
+                        const res = await prisma.history.findFirst({
+                            where: { animeId: data.animeId },
+                        });
+                        if (res) {
+                            try {
+                                await prisma.history_per_episode.create({
+                                    data: {
+                                        queryKey: `${decoded.sub}*${data.animeId}*${data.episodeId}`,
+                                        episodeId: data.episodeId,
+                                        timeStamp: parseFloat(data.timeStamp),
+                                        historyId: res.id,
+                                    },
+                                });
+                            }
+                            catch (error) {
+                                console.log("history_per_episode create error");
+                            }
+                        }
+                    }
+                    catch (error) {
+                        console.log("anime not found");
+                    }
+                }
             }
         }
         catch (error) {
