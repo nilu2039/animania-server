@@ -1,7 +1,11 @@
 import type { FastifyInstance } from "fastify"
 
 import { PrismaInstance } from "../types/prisma-type"
-import { getHistory } from "../handlers/historyHandler"
+import {
+  getHistory,
+  getHistoryById,
+  saveHistory,
+} from "../handlers/historyHandler"
 
 const historyRoutes = async (
   fastify: FastifyInstance,
@@ -9,6 +13,12 @@ const historyRoutes = async (
 ) => {
   fastify.get("/get-history", (request, reply) =>
     getHistory(request, reply, prisma)
+  )
+  fastify.get("/get-history-by-id", (request, reply) =>
+    getHistoryById(request, reply, prisma)
+  )
+  fastify.post("/save-history", (request, reply) =>
+    saveHistory(request, reply, prisma)
   )
 }
 

@@ -14,11 +14,7 @@ const client_1 = require("@prisma/client");
 const history_route_1 = __importDefault(require("./routes/history-route"));
 const prisma = new client_1.PrismaClient();
 const fastify = (0, fastify_1.default)({
-    logger: {
-        transport: {
-            target: "pino-pretty",
-        },
-    } && false,
+    logger: true,
 });
 fastify.register(fastify_2.clerkPlugin);
 fastify.register(fastify_socket_io_1.default);

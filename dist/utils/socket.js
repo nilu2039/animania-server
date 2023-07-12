@@ -42,6 +42,8 @@ const socketHandler = ({ socket, prisma, }) => {
                         },
                     },
                 });
+                console.log("db updated");
+                return;
             }
             catch (error) {
                 console.log("history_per_episode update error");
@@ -55,6 +57,7 @@ const socketHandler = ({ socket, prisma, }) => {
                         animeTitle: data.animeTitle,
                     },
                 });
+                console.log("history db created");
                 try {
                     await prisma.history_per_episode.create({
                         data: {
@@ -64,17 +67,23 @@ const socketHandler = ({ socket, prisma, }) => {
                             historyId: res.id,
                         },
                     });
+                    console.log("history per_episode db create done");
                 }
                 catch (error) {
                     console.log("history_per_episode create error");
                 }
             }
             catch (error) {
-                console.log("history create error", error);
+                console.log("history create error");
                 if (error.code === "P2002") {
                     try {
-                        const res = await prisma.history.findFirst({
-                            where: { animeId: data.animeId },
+                        const res = await prisma.history.findUnique({
+                            where: {
+                                userId_animeId: {
+                                    userId: decoded.sub,
+                                    animeId: data.animeId,
+                                },
+                            },
                         });
                         if (res) {
                             try {
@@ -86,6 +95,7 @@ const socketHandler = ({ socket, prisma, }) => {
                                         historyId: res.id,
                                     },
                                 });
+                                console.log("history_per_episode create done using find");
                             }
                             catch (error) {
                                 console.log("history_per_episode create error");

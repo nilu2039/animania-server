@@ -61,6 +61,8 @@ export const socketHandler = ({
             },
           },
         })
+        console.log("db updated")
+        return
       } catch (error) {
         console.log("history_per_episode update error")
       }
@@ -74,6 +76,8 @@ export const socketHandler = ({
             animeTitle: data.animeTitle,
           },
         })
+        console.log("history db created")
+
         try {
           await prisma.history_per_episode.create({
             data: {
@@ -83,17 +87,22 @@ export const socketHandler = ({
               historyId: res.id,
             },
           })
-          // console.log("db create done")
+          console.log("history per_episode db create done")
         } catch (error) {
           console.log("history_per_episode create error")
         }
         // console.log("db create done")
       } catch (error) {
-        console.log("history create error", error)
+        console.log("history create error")
         if (error.code === "P2002") {
           try {
-            const res = await prisma.history.findFirst({
-              where: { animeId: data.animeId },
+            const res = await prisma.history.findUnique({
+              where: {
+                userId_animeId: {
+                  userId: decoded.sub as string,
+                  animeId: data.animeId,
+                },
+              },
             })
 
             if (res) {
@@ -106,7 +115,7 @@ export const socketHandler = ({
                     historyId: res.id,
                   },
                 })
-                // console.log("db create done")
+                console.log("history_per_episode create done using find")
               } catch (error) {
                 console.log("history_per_episode create error")
               }

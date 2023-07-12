@@ -5,10 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInfo = exports.search = exports.recentEpisodes = exports.popularAnime = exports.topAiring = void 0;
 const fastify_1 = require("@clerk/fastify");
-const extensions_1 = require("@consumet/extensions");
 const axios_1 = __importDefault(require("axios"));
 const zod_1 = require("zod");
-const anilist = new extensions_1.META.Anilist();
 const pageSchema = zod_1.z.object({
     page: zod_1.z.string(),
 });
@@ -23,7 +21,8 @@ const topAiring = async (request, reply) => {
     try {
         const validParams = pageSchema.parse(request.query);
         const { page } = validParams;
-        const data = await anilist.fetchTrendingAnime(parseInt(page));
+        const URL = `https://api.consumet.org/meta/anilist/trending?page=${page}`;
+        const { data } = await axios_1.default.get(URL);
         const {} = (0, fastify_1.getAuth)(request);
         return reply.status(200).send(data);
     }
@@ -39,7 +38,8 @@ const popularAnime = async (request, reply) => {
     try {
         const validParams = pageSchema.parse(request.query);
         const { page } = validParams;
-        const data = await anilist.fetchPopularAnime(parseInt(page));
+        const URL = `https://api.consumet.org/meta/anilist/popular?page=${page}`;
+        const { data } = await axios_1.default.get(URL);
         return reply.status(200).send(data);
     }
     catch (error) {
@@ -69,7 +69,8 @@ const search = async (request, reply) => {
     try {
         const validQuery = searchQuerySchema.parse(request.query);
         const { name, page } = validQuery;
-        const data = await anilist.search(name, parseInt(page));
+        const URL = `https://api.consumet.org/meta/anilist/${name}?page=${page}`;
+        const { data } = await axios_1.default.get(URL);
         reply.status(200).send(data);
     }
     catch (error) {
@@ -84,7 +85,8 @@ const getInfo = async (request, reply) => {
     try {
         const validId = animeInfoSchema.parse(request.query);
         const { id } = validId;
-        const data = await anilist.fetchAnimeInfo(id);
+        const URL = `https://api.consumet.org/meta/anilist/info/${id}?provider=gogoanime`;
+        const { data } = await axios_1.default.get(URL);
         reply.status(200).send(data);
     }
     catch (error) {

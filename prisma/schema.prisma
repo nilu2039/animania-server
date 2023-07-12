@@ -28,8 +28,8 @@ model history {
   id         Int                   @id @default(autoincrement())
   userId     String
   animeId    String
-  animeImg   String                @default("")
-  animeTitle String                @default("")
+  animeImg   String
+  animeTitle String
   createdAt  DateTime              @default(now()) @db.Timestamp(6)
   updatedAt  DateTime              @updatedAt
   episodes   history_per_episode[]
